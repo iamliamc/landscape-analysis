@@ -33,7 +33,7 @@ export const initialNodes: AppNode[] = [
   {
     id: 'f',
     type: 'fungi-crawler',
-    position: { x: 500, y: 400 },
+    position: { x: -500, y: 225 },
     data: { label: 'Fungi' },
   }
 ];

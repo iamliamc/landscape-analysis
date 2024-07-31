@@ -4,7 +4,7 @@ function Copyright() {
     return (
       <Typography variant="body2" color="text.secondary" align="center">
         <Link color="inherit" href="https://www.schmidtfutures.org/">
-          Schmidt Futures: Syntropic Climate AI
+          Schmidt Futures
         </Link>{' '}
         {new Date().getFullYear()}
       </Typography>
@@ -14,8 +14,8 @@ function Copyright() {
 // TODO consider replicating the fun footer of ecosia homepage still looks passable and fun now
 export default function Footer() {
   return (
-      <Box style={{position: 'relative', marginTop: '5px'}} sx={{ bgcolor: 'background.paper', p: 6, backgroundRepeat: "no-repeat" }} component="footer">
-          <Copyright />
-      </Box>
+    <Box component="footer" sx={{ mt: 'auto', py: 2 }}>
+      <Copyright />
+    </Box>
   )
 }

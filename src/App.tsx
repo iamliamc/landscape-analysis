@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import AppBar from '@mui/material/AppBar';
@@ -23,6 +23,7 @@ import '@xyflow/react/dist/style.css';
 
 import { initialNodes, nodeTypes } from './nodes';
 import { initialEdges, edgeTypes } from './edges';
+import OpeningDialogue from './components/OpeningDialogue';
 
 export default function App() {
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
@@ -32,12 +33,16 @@ export default function App() {
     [setEdges]
   );
 
+  const [isDialogueClosed, setIsDialogueClosed] = useState(false);
+
+  
+
   // Create a light theme for the main application
   const lightTheme = createTheme({
     palette: {
       mode: 'light',
     },
-  });
+  }); 
 
   // Create a dark theme for the toolbar
   const darkTheme = createTheme({
@@ -52,6 +57,7 @@ export default function App() {
   return (
     <ThemeProvider theme={lightTheme}>
     <CssBaseline />
+    <OpeningDialogue onDialogueClosed={setIsDialogueClosed} />
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <ThemeProvider theme={darkTheme}>
         <AppBar position="static">
@@ -69,6 +75,7 @@ export default function App() {
         borderRadius: 1,
         overflow: 'hidden'
       }}>
+        {isDialogueClosed && (
         <ReactFlow
             nodes={nodes}
             nodeTypes={nodeTypes}
@@ -78,16 +85,17 @@ export default function App() {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             proOptions={proOptions}
-            defaultViewport={{x: 600, y: 100, zoom: 0 }}
+            defaultViewport={{x: 800, y: 100, zoom: 0 }}
             fitView={false}
         >
           <Background />
           <MiniMap />
           <Controls />
         </ReactFlow>
+        )}
       </Box>
+      <Footer />
     </Box>
-    <Footer />
 
   </ThemeProvider>
 
