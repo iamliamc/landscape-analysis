@@ -52,43 +52,37 @@ export default function App() {
   return (
     <ThemeProvider theme={lightTheme}>
     <CssBaseline />
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <ThemeProvider theme={darkTheme}>
         <AppBar position="static">
           <Toolbar>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              Syntropic Futures Climate Data & AI
+            Syntropic Futures - AI & Climate Data
             </Typography>
           </Toolbar>
         </AppBar>
       </ThemeProvider>
-      <Box sx={{ 
-        flexGrow: 1, 
-        m: 2, 
-        border: '1px solid #ddd', 
-        borderRadius: 1,
-        overflow: 'hidden'
-      }}>
-        <ReactFlow
-            nodes={nodes}
-            nodeTypes={nodeTypes}
-            onNodesChange={onNodesChange}
-            edges={edges}
-            edgeTypes={edgeTypes}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            proOptions={proOptions}
-            defaultViewport={{x: 600, y: 100, zoom: 0 }}
-            fitView={false}
-        >
-          <Background />
-          <MiniMap />
-          <Controls />
-        </ReactFlow>
-      </Box>
+      <Container component="main" maxWidth="lg" sx={{ mt: 4, mb: 4, flexGrow: 1 }}>
+        <Box sx={{ height: '70vh', border: '1px solid #555' }}>
+          <ReactFlow
+              nodes={nodes}
+              nodeTypes={nodeTypes}
+              onNodesChange={onNodesChange}
+              edges={edges}
+              edgeTypes={edgeTypes}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              proOptions={proOptions}
+              fitView
+            >
+            <Background />
+            <MiniMap />
+            <Controls />
+          </ReactFlow>
+        </Box>
+      </Container>
+      <Footer />
     </Box>
-    <Footer />
-
   </ThemeProvider>
 
   );
