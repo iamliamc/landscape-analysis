@@ -23,6 +23,8 @@ export default function App() {
     [setEdges]
   );
 
+  console.log(edges)
+
   return (
     <ReactFlow
       nodes={nodes}
