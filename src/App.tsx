@@ -3,7 +3,6 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Footer from './components/Footer'
 
@@ -25,6 +24,8 @@ import '@xyflow/react/dist/style.css';
 import { initialNodes, nodeTypes } from './nodes';
 import { initialEdges, edgeTypes } from './edges';
 import OpeningDialogue from './components/OpeningDialogue';
+import { keyframes } from '@emotion/react';
+
 
 export default function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -43,6 +44,33 @@ export default function App() {
     },
   }); 
 
+  const hueRotate = keyframes`
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(270deg);
+  }
+`;
+
+  // Create a custom theme
+  const appBarTheme = createTheme({
+    palette: {
+      mode: 'dark',
+    },
+    components: {
+      MuiAppBar: {
+        styleOverrides: {
+          root: {
+            background: 'linear-gradient(45deg, #FF1493, #00BFFF)',
+            animation: `${hueRotate} 15s linear infinite`,
+            boxShadow: '0 0 10px rgba(255, 255, 255, 0.5)',
+          },
+        },
+      },
+    },
+  });
+
   // Create a dark theme for the toolbar
   const darkTheme = createTheme({
     palette: {
@@ -53,7 +81,7 @@ export default function App() {
   const proOptions = { hideAttribution: true };
 
   const addRandomNode = useCallback(() => {
-    if (nodes.length >= 300) {
+    if (nodes.length >= 100) {
       console.log("Maximum number of nodes reached");
       return;
     }
@@ -92,14 +120,12 @@ export default function App() {
   return (
     <ThemeProvider theme={lightTheme}>
     <CssBaseline />
+
     <OpeningDialogue onDialogueClosed={setIsDialogueClosed} />
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <ThemeProvider theme={darkTheme}>
+      <ThemeProvider theme={appBarTheme}>
         <AppBar position="static">
           <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              Syntropic Futures Climate Data & AI
-            </Typography>
           </Toolbar>
         </AppBar>
       </ThemeProvider>

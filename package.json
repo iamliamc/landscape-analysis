@@ -13,15 +13,18 @@
     "@emotion/styled": "^11.13.0",
     "@mui/icons-material": "^5.16.6",
     "@mui/material": "^5.16.6",
+    "@react-three/fiber": "^8.16.8",
     "@xyflow/react": "^12.0.3",
     "p5": "^1.9.4",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "three": "^0.167.1"
   },
   "license": "MIT",
   "devDependencies": {
     "@types/react": "^18.2.53",
     "@types/react-dom": "^18.2.18",
+    "@types/three": "^0.167.1",
     "@typescript-eslint/eslint-plugin": "^6.20.0",
     "@typescript-eslint/parser": "^6.20.0",
     "@vitejs/plugin-react": "^4.2.1",
