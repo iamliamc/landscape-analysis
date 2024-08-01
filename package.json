@@ -14,7 +14,7 @@
     "@mui/icons-material": "^5.16.6",
     "@mui/material": "^5.16.6",
     "@react-three/fiber": "^8.16.8",
-    "@xyflow/react": "^12.0.3",
+    "@xyflow/react": "^12.0.4",
     "p5": "^1.9.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
