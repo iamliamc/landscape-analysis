@@ -103,9 +103,15 @@ export default function App() {
   //   setEdges((eds) => eds.concat(newEdge));
   // }, [nodes, setNodes, setEdges]);
 
+  enum NodeAdditionMode {
+    OnlyPredefined,
+    OnlyRandom,
+    Mixed
+  }
+
   const [nodeIndex, setNodeIndex] = useState(0);
   const [addedNodeIds, setAddedNodeIds] = useState(new Set());
-  const [onlyPredefinedNodes, setOnlyPredefinedNodes] = useState(false);
+  const [nodeAdditionMode, setNodeAdditionMode] = useState<NodeAdditionMode>(NodeAdditionMode.OnlyPredefined);
 
 
   const addNextNode = useCallback(() => {
@@ -113,46 +119,70 @@ export default function App() {
       console.log("Maximum number of nodes reached");
       return;
     }
-
-    let newNode: Node;
+  
+    let newNode: Node | null = null;
     let newEdges: Edge[] = [];
-
-    if (nodeIndex % 2 === 0 && nodeIndex / 2 < initialNodes.length ) {
-      // Add a node from initialNodes
-      newNode = { ...initialNodes[nodeIndex / 2], id: `initial-${nodeIndex / 2}` };
-
-      // Check for edges in initialEdges that involve this node
-      initialEdges.forEach(edge => {
-        if (edge.source === newNode.id && addedNodeIds.has(edge.target)) {
-          newEdges.push({ ...edge, id: `e${edge.source}-${edge.target}` });
-        } else if (edge.target === newNode.id && addedNodeIds.has(edge.source)) {
-          newEdges.push({ ...edge, id: `e${edge.source}-${edge.target}` });
+  
+    const addPredefinedNode = () => {
+      if (nodeIndex < initialNodes.length) {
+        newNode = { ...initialNodes[nodeIndex], id: `initial-${nodeIndex}` };
+        
+        initialEdges.forEach(edge => {
+          if (edge.source === newNode!.id && addedNodeIds.has(edge.target)) {
+            newEdges.push({ ...edge, id: `e${edge.source}-${edge.target}` });
+          } else if (edge.target === newNode!.id && addedNodeIds.has(edge.source)) {
+            newEdges.push({ ...edge, id: `e${edge.source}-${edge.target}` });
+          }
+        });
+      } else {
+        // If we've used all predefined nodes, add a random one instead
+        if (nodeAdditionMode === NodeAdditionMode.OnlyPredefined) {
+        } else {
+          addRandomNode();
         }
-      });
-    } else {
-      // Add a random node
+      }
+    };
+  
+    const addRandomNode = () => {
       newNode = {
         id: `random-${Math.floor(Math.random() * 10000)}`,
         data: { label: `Random Node ${nodes.length + 1}` },
         position: { x: Math.random() * 3000 - 1500, y: Math.random() * 3000 - 1500 },
       };
+    };
+  
+    switch (nodeAdditionMode) {
+      case NodeAdditionMode.OnlyPredefined:
+        addPredefinedNode();
+        break;
+      case NodeAdditionMode.OnlyRandom:
+        addRandomNode();
+        break;
+      case NodeAdditionMode.Mixed:
+        if (nodeIndex % 2 === 0) {
+          addPredefinedNode();
+        } else {
+          addRandomNode();
+        }
+        break;
     }
-
-    // If no predefined edges were added, connect to a random existing node
-    if (newEdges.length === 0 && nodes.length > 0) {
-      const targetNode = nodes[Math.floor(Math.random() * nodes.length)];
-      newEdges.push({
-        id: `e${newNode.id}-${targetNode.id}`,
-        source: newNode.id,
-        target: targetNode.id,
-      });
+  
+    if (newNode) {
+      if (newEdges.length === 0 && nodes.length > 0) {
+        const targetNode = nodes[Math.floor(Math.random() * nodes.length)];
+        newEdges.push({
+          id: `e${newNode.id}-${targetNode.id}`,
+          source: newNode.id,
+          target: targetNode.id,
+        });
+      }
+  
+      setNodes((nds) => nds.concat(newNode!));
+      setEdges((eds) => eds.concat(newEdges));
+      setNodeIndex((prevIndex) => prevIndex + 1);
+      setAddedNodeIds((prevIds) => new Set(prevIds).add(newNode!.id));
     }
-
-    setNodes((nds) => nds.concat(newNode));
-    setEdges((eds) => eds.concat(newEdges));
-    setNodeIndex((prevIndex) => prevIndex + 1);
-    setAddedNodeIds((prevIds) => new Set(prevIds).add(newNode.id));
-  }, [nodes, setNodes, setEdges, nodeIndex, addedNodeIds]);
+  }, [nodes, setNodes, setEdges, nodeIndex, addedNodeIds, nodeAdditionMode]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
