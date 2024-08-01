@@ -8,6 +8,7 @@ import Footer from './components/Footer'
 
 import {
   ReactFlow,
+  ReactFlowProvider,
   Background,
   Controls,
   MiniMap,
@@ -16,6 +17,7 @@ import {
   addEdge,
   Node,
   Edge,
+  useReactFlow,
   type OnConnect,
 } from '@xyflow/react';
 
@@ -25,9 +27,10 @@ import { initialNodes, nodeTypes } from './nodes';
 import { initialEdges, edgeTypes } from './edges';
 import OpeningDialogue from './components/OpeningDialogue';
 import { keyframes } from '@emotion/react';
+import { Button, Container } from '@mui/material';
 
 
-export default function App() {
+function Flow({isDialogueClosed, triggerViewportMove, resetTrigger}) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const onConnect: OnConnect = useCallback(
@@ -35,73 +38,8 @@ export default function App() {
     [setEdges]
   );
 
-  const [isDialogueClosed, setIsDialogueClosed] = useState(false);
-
-  // Create a light theme for the main application
-  const lightTheme = createTheme({
-    palette: {
-      mode: 'light',
-    },
-  }); 
-
-  const hueRotate = keyframes`
-  0% {
-    filter: hue-rotate(0deg);
-  }
-  100% {
-    filter: hue-rotate(270deg);
-  }
-`;
-
-  // Create a custom theme
-  const appBarTheme = createTheme({
-    palette: {
-      mode: 'dark',
-    },
-    components: {
-      MuiAppBar: {
-        styleOverrides: {
-          root: {
-            background: 'linear-gradient(45deg, #FF1493, #00BFFF)',
-            animation: `${hueRotate} 15s linear infinite`,
-            boxShadow: '0 0 10px rgba(255, 255, 255, 0.5)',
-          },
-        },
-      },
-    },
-  });
-
-  // Create a dark theme for the toolbar
-  const darkTheme = createTheme({
-    palette: {
-      mode: 'dark',
-    },
-  });
 
   const proOptions = { hideAttribution: true };
-
-  // const addRandomNode = useCallback(() => {
-  //   if (nodes.length >= 100) {
-  //     console.log("Maximum number of nodes reached");
-  //     return;
-  //   }
-
-  //   const newNode: Node = {
-  //     id: `random-${Math.floor(Math.random() * 10000)}`,
-  //     data: { label: `Random Node ${nodes.length + 1}` },
-  //     position: { x: Math.random() * 3000 - 1500, y: Math.random() * 3000 - 1500 },
-  //   };
-
-  //   const targetNode = nodes[Math.floor(Math.random() * nodes.length)];
-  //   const newEdge: Edge = {
-  //     id: `e${newNode.id}-${targetNode.id}`,
-  //     source: newNode.id,
-  //     target: targetNode.id,
-  //   };
-
-  //   setNodes((nds) => nds.concat(newNode));
-  //   setEdges((eds) => eds.concat(newEdge));
-  // }, [nodes, setNodes, setEdges]);
 
   enum NodeAdditionMode {
     OnlyPredefined,
@@ -111,8 +49,28 @@ export default function App() {
 
   const [nodeIndex, setNodeIndex] = useState(0);
   const [addedNodeIds, setAddedNodeIds] = useState(new Set());
-  const [nodeAdditionMode, setNodeAdditionMode] = useState<NodeAdditionMode>(NodeAdditionMode.OnlyPredefined);
+  const [nodeAdditionMode, setNodeAdditionMode] = useState<NodeAdditionMode>(NodeAdditionMode.Mixed);
+  const [isViewportLocked, setIsViewportLocked] = useState(true);
+  const [viewportMoveCount, setViewportMoveCount] = useState(0);
+  const { setViewport, getViewport } = useReactFlow();
 
+  const handleMoveViewport = () => {
+    setViewportMoveCount((prev) => prev + 1);
+    if (viewportMoveCount === 0) {
+      setViewport({ x: 1500, y: 1500, zoom: 1.5 }, { duration: 3000 });
+    } else if (viewportMoveCount === 1) {
+      setViewport({ x: -500, y: -500, zoom: 2 }, { duration: 2500 });
+    } else {
+      setIsViewportLocked(false)
+    }
+  };
+
+  useEffect(() => {
+    if (triggerViewportMove) {
+      handleMoveViewport();
+      resetTrigger();
+    }
+  }, [triggerViewportMove, resetTrigger]);
 
   const addNextNode = useCallback(() => {
     if (nodes.length >= 100) {
@@ -196,7 +154,78 @@ export default function App() {
     };
   }, [isDialogueClosed, addNextNode]);
 
+  return (
+        <>
+          <ReactFlow
+              nodes={nodes}
+              nodeTypes={nodeTypes}
+              onNodesChange={onNodesChange}
+              edges={edges}
+              edgeTypes={edgeTypes}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              proOptions={proOptions}
+              defaultViewport={{x: 800, y: 100, zoom: 0.75 }}
+              fitView={false}
+              panOnDrag={!isViewportLocked}
+              zoomOnScroll={!isViewportLocked}
+          >
+            <Background />
+            <MiniMap />
+            <Controls />
+          </ReactFlow>
+          </>
+  );
+}
 
+export default function App() {
+  const [isDialogueClosed, setIsDialogueClosed] = useState(false);
+
+  // Create a light theme for the main application
+  const lightTheme = createTheme({
+    palette: {
+      mode: 'light',
+    },
+  }); 
+
+  const hueRotate = keyframes`
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(270deg);
+  }
+`;
+
+  // Create a custom theme
+  const appBarTheme = createTheme({
+    palette: {
+      mode: 'dark',
+    },
+    components: {
+      MuiAppBar: {
+        styleOverrides: {
+          root: {
+            background: 'linear-gradient(45deg, #FF1493, #00BFFF)',
+            animation: `${hueRotate} 15s linear infinite`,
+            boxShadow: '0 0 10px rgba(255, 255, 255, 0.5)',
+          },
+        },
+      },
+    },
+  });
+
+  // Create a dark theme for the toolbar
+  const darkTheme = createTheme({
+    palette: {
+      mode: 'dark',
+    },
+  });
+  const [triggerViewportMove, setTriggerViewportMove] = useState(false);
+
+  const handleMoveViewport = () => {
+    setTriggerViewportMove(true);
+  };
 
   return (
     <ThemeProvider theme={lightTheme}>
@@ -218,28 +247,25 @@ export default function App() {
         overflow: 'hidden'
       }}>
         {isDialogueClosed && (
-        <ReactFlow
-            nodes={nodes}
-            nodeTypes={nodeTypes}
-            onNodesChange={onNodesChange}
-            edges={edges}
-            edgeTypes={edgeTypes}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            proOptions={proOptions}
-            defaultViewport={{x: 800, y: 100, zoom: 0.75 }}
-            fitView={false}
-        >
-          <Background />
-          <MiniMap />
-          <Controls />
-        </ReactFlow>
+        <ReactFlowProvider>
+          <Flow 
+            isDialogueClosed={isDialogueClosed} 
+            triggerViewportMove={triggerViewportMove}
+            resetTrigger={() => setTriggerViewportMove(false)}
+          />
+        </ReactFlowProvider>
+               )}
+       </Box>
+       <Container maxWidth="sm" sx={{ my: 2, textAlign: 'center' }}>
+        {isDialogueClosed && (
+          <Button variant="contained" color="primary" onClick={handleMoveViewport}>
+            Explore Provocations
+          </Button>
         )}
-      </Box>
-      <Footer />
-    </Box>
-
-  </ThemeProvider>
-
-  );
+      </Container>
+       <Footer />
+     </Box>
+ 
+   </ThemeProvider>
+  )
 }
