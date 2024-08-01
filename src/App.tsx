@@ -28,8 +28,8 @@ import { keyframes } from '@emotion/react';
 
 
 export default function App() {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const onConnect: OnConnect = useCallback(
     (connection) => setEdges((edges) => addEdge(connection, edges)),
     [setEdges]
@@ -80,40 +80,91 @@ export default function App() {
 
   const proOptions = { hideAttribution: true };
 
-  const addRandomNode = useCallback(() => {
+  // const addRandomNode = useCallback(() => {
+  //   if (nodes.length >= 100) {
+  //     console.log("Maximum number of nodes reached");
+  //     return;
+  //   }
+
+  //   const newNode: Node = {
+  //     id: `random-${Math.floor(Math.random() * 10000)}`,
+  //     data: { label: `Random Node ${nodes.length + 1}` },
+  //     position: { x: Math.random() * 3000 - 1500, y: Math.random() * 3000 - 1500 },
+  //   };
+
+  //   const targetNode = nodes[Math.floor(Math.random() * nodes.length)];
+  //   const newEdge: Edge = {
+  //     id: `e${newNode.id}-${targetNode.id}`,
+  //     source: newNode.id,
+  //     target: targetNode.id,
+  //   };
+
+  //   setNodes((nds) => nds.concat(newNode));
+  //   setEdges((eds) => eds.concat(newEdge));
+  // }, [nodes, setNodes, setEdges]);
+
+  const [nodeIndex, setNodeIndex] = useState(0);
+  const [addedNodeIds, setAddedNodeIds] = useState(new Set());
+  const [onlyPredefinedNodes, setOnlyPredefinedNodes] = useState(false);
+
+
+  const addNextNode = useCallback(() => {
     if (nodes.length >= 100) {
       console.log("Maximum number of nodes reached");
       return;
     }
 
-    const newNode: Node = {
-      id: `random-${Math.floor(Math.random() * 10000)}`,
-      data: { label: `Random Node ${nodes.length + 1}` },
-      position: { x: Math.random() * 3000 - 1500, y: Math.random() * 3000 - 1500 },
-    };
+    let newNode: Node;
+    let newEdges: Edge[] = [];
 
-    const targetNode = nodes[Math.floor(Math.random() * nodes.length)];
-    const newEdge: Edge = {
-      id: `e${newNode.id}-${targetNode.id}`,
-      source: newNode.id,
-      target: targetNode.id,
-    };
+    if (nodeIndex % 2 === 0 && nodeIndex / 2 < initialNodes.length ) {
+      // Add a node from initialNodes
+      newNode = { ...initialNodes[nodeIndex / 2], id: `initial-${nodeIndex / 2}` };
+
+      // Check for edges in initialEdges that involve this node
+      initialEdges.forEach(edge => {
+        if (edge.source === newNode.id && addedNodeIds.has(edge.target)) {
+          newEdges.push({ ...edge, id: `e${edge.source}-${edge.target}` });
+        } else if (edge.target === newNode.id && addedNodeIds.has(edge.source)) {
+          newEdges.push({ ...edge, id: `e${edge.source}-${edge.target}` });
+        }
+      });
+    } else {
+      // Add a random node
+      newNode = {
+        id: `random-${Math.floor(Math.random() * 10000)}`,
+        data: { label: `Random Node ${nodes.length + 1}` },
+        position: { x: Math.random() * 3000 - 1500, y: Math.random() * 3000 - 1500 },
+      };
+    }
+
+    // If no predefined edges were added, connect to a random existing node
+    if (newEdges.length === 0 && nodes.length > 0) {
+      const targetNode = nodes[Math.floor(Math.random() * nodes.length)];
+      newEdges.push({
+        id: `e${newNode.id}-${targetNode.id}`,
+        source: newNode.id,
+        target: targetNode.id,
+      });
+    }
 
     setNodes((nds) => nds.concat(newNode));
-    setEdges((eds) => eds.concat(newEdge));
-  }, [nodes, setNodes, setEdges]);
+    setEdges((eds) => eds.concat(newEdges));
+    setNodeIndex((prevIndex) => prevIndex + 1);
+    setAddedNodeIds((prevIds) => new Set(prevIds).add(newNode.id));
+  }, [nodes, setNodes, setEdges, nodeIndex, addedNodeIds]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isDialogueClosed) {
       interval = setInterval(() => {
-        addRandomNode();
+        addNextNode();
       }, 10);
     }
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isDialogueClosed, addRandomNode]);
+  }, [isDialogueClosed, addNextNode]);
 
 
 
