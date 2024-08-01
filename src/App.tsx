@@ -18,6 +18,7 @@ import {
   Node,
   Edge,
   useReactFlow,
+  useViewport,
   type OnConnect,
 } from '@xyflow/react';
 
@@ -30,12 +31,26 @@ import { keyframes } from '@emotion/react';
 import { Button, Container } from '@mui/material';
 
 
-function Flow({isDialogueClosed, triggerViewportMove, resetTrigger}) {
+function Flow({isDialogueClosed, triggerViewportMove, resetTrigger, viewportMoveCount}) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const onConnect: OnConnect = useCallback(
     (connection) => setEdges((edges) => addEdge(connection, edges)),
     [setEdges]
+  );
+  const { x, y, zoom } = useViewport();
+  const ViewportDisplay = ({ x, y, zoom }) => (
+    <div style={{
+      position: 'absolute',
+      top: 10,
+      left: 10,
+      background: 'rgba(255, 255, 255, 0.7)',
+      padding: '5px 10px',
+      borderRadius: '5px',
+      zIndex: 5,
+    }}>
+      Viewport: x: {x.toFixed(0)}, y: {y.toFixed(0)}, zoom: {zoom.toFixed(2)}
+    </div>
   );
 
 
@@ -49,17 +64,16 @@ function Flow({isDialogueClosed, triggerViewportMove, resetTrigger}) {
 
   const [nodeIndex, setNodeIndex] = useState(0);
   const [addedNodeIds, setAddedNodeIds] = useState(new Set());
-  const [nodeAdditionMode, setNodeAdditionMode] = useState<NodeAdditionMode>(NodeAdditionMode.Mixed);
+  const [nodeAdditionMode, setNodeAdditionMode] = useState<NodeAdditionMode>(NodeAdditionMode.OnlyPredefined);
   const [isViewportLocked, setIsViewportLocked] = useState(true);
-  const [viewportMoveCount, setViewportMoveCount] = useState(0);
   const { setViewport, getViewport } = useReactFlow();
 
   const handleMoveViewport = () => {
-    setViewportMoveCount((prev) => prev + 1);
+    
     if (viewportMoveCount === 0) {
-      setViewport({ x: 1500, y: 1500, zoom: 1.5 }, { duration: 3000 });
+      setViewport({ x: 1500, y: 1500, zoom: 1 }, { duration: 3000 });
     } else if (viewportMoveCount === 1) {
-      setViewport({ x: -500, y: -500, zoom: 2 }, { duration: 2500 });
+      setViewport({ x: -2400, y: -1875, zoom: 1.35 }, { duration: 2500 });
     } else {
       setIsViewportLocked(false)
     }
@@ -165,7 +179,7 @@ function Flow({isDialogueClosed, triggerViewportMove, resetTrigger}) {
               onEdgesChange={onEdgesChange}
               onConnect={onConnect}
               proOptions={proOptions}
-              defaultViewport={{x: 800, y: 100, zoom: 0.75 }}
+              defaultViewport={{x: 400, y: -200, zoom: 0.75 }}
               fitView={false}
               panOnDrag={!isViewportLocked}
               zoomOnScroll={!isViewportLocked}
@@ -173,6 +187,7 @@ function Flow({isDialogueClosed, triggerViewportMove, resetTrigger}) {
             <Background />
             <MiniMap />
             <Controls />
+            <ViewportDisplay x={x} y={y} zoom={zoom} />
           </ReactFlow>
           </>
   );
@@ -212,6 +227,19 @@ export default function App() {
           },
         },
       },
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            background: 'linear-gradient(45deg, #FF1493, #00BFFF)',
+            animation: `${hueRotate} 15s linear infinite`,
+            color: 'white',
+            '&:hover': {
+              background: 'linear-gradient(45deg, #FF1493, #00BFFF)',
+              filter: 'brightness(1.2)',
+            },
+          },
+        },
+      },
     },
   });
 
@@ -222,9 +250,11 @@ export default function App() {
     },
   });
   const [triggerViewportMove, setTriggerViewportMove] = useState(false);
+  const [viewportMoveCount, setViewportMoveCount] = useState(-1);
 
   const handleMoveViewport = () => {
     setTriggerViewportMove(true);
+    setViewportMoveCount((prev) => prev + 1);
   };
 
   return (
@@ -252,15 +282,18 @@ export default function App() {
             isDialogueClosed={isDialogueClosed} 
             triggerViewportMove={triggerViewportMove}
             resetTrigger={() => setTriggerViewportMove(false)}
+            viewportMoveCount={viewportMoveCount}
           />
         </ReactFlowProvider>
                )}
        </Box>
        <Container maxWidth="sm" sx={{ my: 2, textAlign: 'center' }}>
-        {isDialogueClosed && (
+        {isDialogueClosed && (viewportMoveCount < 2) && (
+          <ThemeProvider theme={appBarTheme}>
           <Button variant="contained" color="primary" onClick={handleMoveViewport}>
-            Explore Provocations
+            {viewportMoveCount < 1 ? 'Explore Provocations' : 'Enter Free Explore Mode'}
           </Button>
+          </ThemeProvider>
         )}
       </Container>
        <Footer />
