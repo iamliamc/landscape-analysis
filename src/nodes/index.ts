@@ -1,6 +1,6 @@
 import type { NodeTypes } from '@xyflow/react';
 import cutFruitsImage from '../assets/images/cut_fruits.png';
-
+import bottleGif from '../assets/images/bottle.gif';
 
 import { PositionLoggerNode } from './PositionLoggerNode';
 import { ColorSelectorNode } from './ColorSelectorNode';
@@ -53,6 +53,16 @@ export const initialNodes: AppNode[] = [
     data: { 
       imageSrc: 'https://geospatialmedia.s3.amazonaws.com/wp-content/uploads/2018/09/radiant1.jpg',
       alt: 'External Image'
+    },
+  },
+  {
+    id: 'image3',
+    type: 'image-node',
+    position: { x: 300, y: 600 },
+    data: { 
+      imageSrc: bottleGif,
+      isPublic: true,
+      alt: 'Example Image'
     },
   },
 ];
