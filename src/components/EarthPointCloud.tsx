@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react';
 import * as THREE from 'three';
 
-const EarthPointCloudComponent = ({ width = '100%', height = '400px' }) => {
+const EarthPointCloudComponent = ({ width = '400px', height = '400px' }) => {
   const mountRef = useRef(null);
 
   useEffect(() => {
